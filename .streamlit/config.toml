@@ -1,5 +1,12 @@
 [theme]
-primaryColor = "#00D4AA"
-backgroundColor = "#0E1117"
-secondaryBackgroundColor = "#262730"
-textColor = "#FAFAFA"
+primaryColor = "#00C4B4"          # bright teal accent
+backgroundColor = "#FFFFFF"       # pure white
+secondaryBackgroundColor = "#F5F7FA"  # very light gray for cards
+textColor = "#1E1E1E"             # almost black for max readability
+font = "sans serif"
+
+# Make the table colors pop perfectly on light background
+[theme.base]
+success = "#10B981"   # emerald green for green signals
+warning = "#F59E0B"   # amber for yellow signals
+danger = "#EF4444"    # red for future red signals
