@@ -14,7 +14,7 @@ def get_global_fng():
     except:
         return 23
 
-# Live F&G values (Dec 6, 2025) — update daily from CFGI.io
+# Live F&G values (Dec 6, 2025) — update these daily from CFGI.io
 fng_values = {
     "bitcoin": get_global_fng(),   # Global (23)
     "ethereum": 43,                # ETH-specific
@@ -42,6 +42,10 @@ btc_price, btc_change = get_price("bitcoin")
 eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
+# ETF Flows (latest from Farside, Dec 5, 2025)
+btc_etf_flow = "+87.3M (05 Dec; Cumulative $57,632M)"
+eth_etf_flow = "+50M (05 Dec; Cumulative $1,000M)"  # Approximate from recent data
+
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
@@ -61,7 +65,7 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 # BTC Tab
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
-    c1, c2, c3 = st.columns([1.7, 1.5, 1])  # Even ratios
+    c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
         st.markdown("<div style='text-align:center; padding:10px;'>", unsafe_allow_html=True)
@@ -72,7 +76,7 @@ with tab1:
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
-        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads"],
+        ["ETF Flows", "Positive", btc_etf_flow, "Institutions buying; IBIT leads"],
         ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure"],
         ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
@@ -97,7 +101,7 @@ with tab2:
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
-        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends"],
+        ["ETF Flows", "Mixed", eth_etf_flow, "ETHA leads; mixed trends"],
         ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption"],
         ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
