@@ -6,18 +6,6 @@ import pytz
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
-# Tooltip definitions
-tooltips = {
-    "Composite Exit Velocity": "Daily % of supply that moves on-chain. Lower = stronger HODL bias.",
-    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH ETFs (BlackRock, Fidelity, etc.).",
-    "Exchange Netflow": "14-day SMA of coins moving to/from exchanges. Negative = accumulation.",
-    "Taker CVD": "Cumulative Volume Delta — measures aggressive buying vs. selling pressure.",
-    "STH SOPR": "Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.",
-    "Supply in Profit": "% of circulating supply with cost basis below current price.",
-    "Whale/Miner Velocity": "How actively large holders/miners are spending.",
-    "Fear & Greed": "Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).",
-}
-
 # Global F&G
 @st.cache_data(ttl=300)
 def get_global_fng():
@@ -57,7 +45,7 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Table styling (pure pandas — no HTML, no errors)
+# Table styling
 def style_signals(val):
     if any(x in val for x in ["Low", "Positive", "Strong"]):
         return "background-color: #d4edda; color: #155724"
@@ -67,6 +55,18 @@ def style_signals(val):
         return "background-color: #f8f9fa; color: #495057"
     return ""
 
+# Glossary
+glossary = {
+    "Composite Exit Velocity": "Daily % of supply that moves on-chain. Lower = stronger HODL bias.",
+    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH ETFs (BlackRock, Fidelity, etc.).",
+    "Exchange Netflow": "14-day SMA of coins moving to/from exchanges. Negative = accumulation.",
+    "Taker CVD": "Cumulative Volume Delta — measures aggressive buying vs. selling pressure.",
+    "STH SOPR": "Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.",
+    "Supply in Profit": "% of circulating supply with cost basis below current price.",
+    "Whale/Miner Velocity": "How actively large holders/miners are spending.",
+    "Fear & Greed": "Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).",
+}
+
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 
@@ -75,7 +75,7 @@ with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1:
-        st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%", help="Live spot price from CoinGecko")
+        st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
@@ -83,7 +83,7 @@ with tab1:
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.02–0.05%/day — Minimal selling pressure</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}")
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
@@ -96,15 +96,14 @@ with tab1:
         ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone"],
     ]
     df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
 # ETH Tab
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1:
-        st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%", help="Live spot price from CoinGecko")
+        st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
@@ -112,7 +111,7 @@ with tab2:
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.03–0.06%/day — Minimal churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}")
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
@@ -125,15 +124,14 @@ with tab2:
         ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
     ]
     df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
 # SOL Tab
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1:
-        st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%", help="Live spot price from CoinGecko")
+        st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#ffebee; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#c62828; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
@@ -141,7 +139,7 @@ with tab3:
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.04–0.07%/day — Balanced churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}")
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
@@ -154,7 +152,11 @@ with tab3:
         ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone"],
     ]
     df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+
+# Glossary (collapsible)
+with st.expander("Glossary — Click to expand definitions"):
+    for term, definition in glossary.items():
+        st.markdown(f"**{term}** — {definition}")
 
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s")
