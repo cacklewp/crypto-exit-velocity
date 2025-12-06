@@ -7,15 +7,24 @@ st.set_page_config(page_title="Exit Velocity", layout="wide")
 # Live price + change
 @st.cache_data(ttl=60)
 def get_price(coin):
+    url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd&include_24hr_change=true"
     try:
-        url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd&include_24hr_change=true"
-        response = requests.get(url)
-        response.raise_for_status()  # Raise error for bad status
+        response = requests.get(url, timeout=10)
+        if response.status_code != 200:
+            raise Exception("Bad status")
         data = response.json()
         if coin in data and "usd" in data[coin]:
             price = data[coin]["usd"]
-            change = round(data[coin]["usd_24h_change"], 2)
+            change = round(data[coin].get("usd_24h_change", 0), 2)
             return price, change
+    except:
+        pass
+    
+    # Fallback prices so the app never crashes
+    fallback = {"bitcoin": (57450, 1.4), "ethereum": (3150, 1.1), "solana": (143, 2.3)}
+    price, change = fallback.get(coin, (0, 0))
+    st.warning(f"Using fallback price for {coin.upper()} (CoinGecko issue)")
+    return price, change
         else:
             st.warning(f"API data missing for {coin} — using fallback.")
             return 57000 if coin == "bitcoin" else 3150 if coin == "ethereum" else 143, 0.0  # Fallback prices
@@ -108,6 +117,7 @@ with tab3:
 
 
 st.success("Live • Auto-refresh every 60s • BTC – ETH – SOL")
+
 
 
 
