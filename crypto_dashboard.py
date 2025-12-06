@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import plotly.graph_objects as go
 import pandas as pd
 from datetime import datetime
 import pytz
@@ -15,7 +14,7 @@ def get_global_fng():
     except:
         return 23
 
-# Live F&G values (Dec 6, 2025) — update these daily from CFGI.io
+# Live F&G values (Dec 6, 2025) — update daily from CFGI.io
 fng_values = {
     "bitcoin": get_global_fng(),   # Global (23)
     "ethereum": 43,                # ETH-specific
@@ -46,31 +45,6 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Perfect BitcoinFear-style dial
-def fng_dial(value):
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=value,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        gauge={
-            'shape': "angular",
-            'axis': {'range': [0, 100], 'tickwidth': 0, 'showticklabels': False},
-            'bar': {'color': "darkgray"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [0, 25], 'color': "red"},
-                {'range': [25, 50], 'color': "orange"},
-                {'range': [50, 75], 'color': "yellow"},
-                {'range': [75, 100], 'color': "green"}
-            ],
-            'threshold': {'line': {'color': "black", 'width': 4}, 'thickness': 0.75, 'value': value}
-        }
-    ))
-    fig.update_layout(height=130, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)")
-    return fig
-
 # Table styling
 def style_signals(val):
     if any(x in val for x in ["Low", "Positive", "Strong"]):
@@ -87,14 +61,14 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 # BTC Tab
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
-    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    c1, c2, c3 = st.columns([1.7, 1.5, 1])  # Even ratios
     with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
-        st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
-    with c3:
-        st.plotly_chart(fng_dial(fng_values["bitcoin"]), use_container_width=True)
-        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>Global: {fng_values['bitcoin']} — {fng_labels['bitcoin']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    with c3: st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} ({fng_labels['bitcoin']})")
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
@@ -104,7 +78,7 @@ with tab1:
         ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
         ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss"],
         ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts"],
-        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone"],
+        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} ({fng_labels['bitcoin']})", "Extreme fear; contrarian buy zone"],
     ]
     df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
@@ -112,14 +86,14 @@ with tab1:
 # ETH Tab
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
-    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
     with c2:
-        st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
-    with c3:
-        st.plotly_chart(fng_dial(fng_values["ethereum"]), use_container_width=True)
-        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>ETH-specific: {fng_values['ethereum']} — {fng_labels['ethereum']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    with c3: st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} ({fng_labels['ethereum']})")
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
@@ -129,7 +103,7 @@ with tab2:
         ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
         ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater"],
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive"],
-        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
+        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} ({fng_labels['ethereum']})", "ETH sentiment: Neutral zone"],
     ]
     df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
@@ -137,14 +111,14 @@ with tab2:
 # SOL Tab
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
-    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    c1, c2, c3 = st.columns([1.7, 1.5, 1])
     with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
     with c2:
-        st.markdown("<h2 style='text-align:center; color:#FF6B6B; margin-bottom:0;'>Medium-Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
-    with c3:
-        st.plotly_chart(fng_dial(fng_values["solana"]), use_container_width=True)
-        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>SOL-specific: {fng_values['solana']} — {fng_labels['solana']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#FF6B6B; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+    with c3: st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} ({fng_labels['solana']})")
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
@@ -154,7 +128,7 @@ with tab3:
         ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
         ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss"],
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact"],
-        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone"],
+        ["Fear & Greed", "Yellow", f"{fng_values['solana']} ({fng_labels['solana']})", "SOL sentiment: Neutral zone"],
     ]
     df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
