@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+import pandas as pd
 from datetime import datetime
 import pytz
 
@@ -147,18 +148,17 @@ with tab3:
     df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
-# Glossary (collapsible
+# Glossary
 with st.expander("Glossary — Click for metric definitions"):
     st.markdown("""
-    - **Composite Exit Velocity**: Daily % of supply that moves on-chain. Lower = stronger HODL bias.  
-    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, Fidelity, etc.).  
-    - **Exchange Netflow**: 14-day SMA of coins moving to/from exchanges. Negative = accumulation.  
-    - **Taker CVD**: Cumulative Volume Delta — aggressive buying vs. selling pressure.  
-    - **STH SOPR**: Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.  
-    - **Supply in Profit**: % of circulating supply with cost basis below current price.  
-    - **Whale/Miner Velocity**: How actively large holders/miners are spending.  
+    - **Composite Exit Velocity**: Daily % of supply that moves on-chain. Lower = stronger HODL bias.
+    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, Fidelity, etc.).
+    - **Exchange Netflow**: 14-day SMA of coins moving to/from exchanges. Negative = accumulation.
+    - **Taker CVD**: Cumulative Volume Delta — aggressive buying vs. selling pressure.
+    - **STH SOPR**: Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.
+    - **Supply in Profit**: % of circulating supply with cost basis below current price.
+    - **Whale/Miner Velocity**: How actively large holders/miners are spending.
     - **Fear & Greed**: Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).
     """)
 
-# Footer with data sources
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s • Data: CoinGecko, Alternative.me, CFGI.io, Farside Investors")
