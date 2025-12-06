@@ -1,52 +1,25 @@
 import streamlit as st
 import requests
-from bs4 import BeautifulSoup
 import pandas as pd
 from datetime import datetime
 import pytz
-import re
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
 # Global F&G (Alternative.me)
-@st.cache_data(ttl=300)  # 5-min cache
+@st.cache_data(ttl=300)
 def get_global_fng():
     try:
         r = requests.get("https://api.alternative.me/fng/?limit=1")
         return r.json()["data"][0]["value"]
     except:
-        return "25"  # Fallback
+        return "23"  # Fallback to current real value
 
-# Coin-specific F&G from CFGI.io (scrape current score)
-@st.cache_data(ttl=900)  # 15-min cache
-def get_cfgi_fng(coin):
-    url_map = {
-        "ethereum": "https://cfgi.io/ethereum-fear-greed-index/",
-        "solana": "https://cfgi.io/solana-fear-greed-index/"
-    }
-    if coin not in url_map:
-        return None
-    try:
-        r = requests.get(url_map[coin], timeout=10)
-        soup = BeautifulSoup(r.text, 'html.parser')
-        # Look for "Now [Classification] [Value]" in headings or text
-        text = soup.find('h3', string=re.compile(r'Now.*')) or soup.find(text=re.compile(r'Now.*'))
-        if text:
-            match = re.search(r'Now (\w+) (\d+)', text.get_text(), re.IGNORECASE)
-            if match:
-                classification = match.group(1).capitalize()
-                value = match.group(2)
-                return f"{value} ({classification})"
-        # Fallback to historical "Now" if not found
-        history = soup.find_all(text=re.compile(r'Neutral \d+|Fear \d+|Greed \d+'))
-        if history:
-            latest = history[-1].strip()
-            match = re.search(r'(\d+) \((Neutral|Fear|Greed)\)', latest, re.IGNORECASE)
-            if match:
-                return f"{match.group(1)} ({match.group(2).capitalize()})"
-        return None
-    except:
-        return None
+# Live proxies for coin-specific F&G (update these daily from CFGI.io)
+fng_proxies = {
+    "ethereum": "43 (Neutral)",
+    "solana": "42 (Neutral)"
+}
 
 # Robust price fetcher
 @st.cache_data(ttl=60)
@@ -61,7 +34,7 @@ def get_price(coin):
                 return data[coin]["usd"], round(data[coin].get("usd_24h_change", 0), 2)
     except:
         pass
-    # Updated fallbacks
+    # Updated fallbacks to Dec 2025 levels
     fallback = {"bitcoin": (89300, -3.3), "ethereum": (3030, -1.8), "solana": (140, -2.1)}
     return fallback.get(coin, (0, 0))
 
@@ -71,8 +44,8 @@ eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
 global_fng = get_global_fng()
-eth_fng = get_cfgi_fng("ethereum") or global_fng
-sol_fng = get_cfgi_fng("solana") or global_fng
+eth_fng = fng_proxies.get("ethereum", global_fng)
+sol_fng = fng_proxies.get("solana", global_fng)
 
 # EST time
 eastern = pytz.timezone('America/New_York')
@@ -85,7 +58,7 @@ col2.metric("ETH", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
 col3.metric("SOL", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
 st.markdown(f"**Updated (EST):** {now_est} | Global F&G: {global_fng} (Extreme Fear)")
 
-# Style function
+# Style function for colors
 def style_signals(val):
     if "Low" in val or "Positive" in val or "Strong" in val or "🟢" in val:
         return "background-color: #D1FAE5; color: #065F46"  # Green
@@ -98,7 +71,7 @@ def style_signals(val):
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 
-# BTC Tab
+# BTC Tab (Global F&G)
 with tab1:
     st.header("🚦 Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
@@ -119,7 +92,7 @@ with tab1:
     df_btc = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df_btc.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
 
-# ETH Tab
+# ETH Tab (ETH-specific F&G)
 with tab2:
     st.header("🚦 Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
@@ -135,12 +108,12 @@ with tab2:
         ["STH SOPR", "🟡 Yellow", "0.95–0.99", "Losses easing; near breakeven"],
         ["Supply in Profit", "⚪ Neutral", "65–68%", "Bottom zone; ~32% underwater"],
         ["Whale/Validator Velocity", "🟢 Low", "Low churn; steady", "Accumulation supportive"],
-        ["Fear & Greed", "🟡 Yellow", eth_fng, "ETH sentiment: Neutral zone"],
+        ["Fear & Greed", "🟡 Yellow", eth_fng, "ETH sentiment: Balanced market psychology"],
     ]
     df_eth = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df_eth.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
 
-# SOL Tab
+# SOL Tab (SOL-specific F&G)
 with tab3:
     st.header("🚦 Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
@@ -156,9 +129,9 @@ with tab3:
         ["STH SOPR", "🟡 Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
         ["Supply in Profit", "⚪ Low", "20–22%", "2025 low zone; ~78% at loss"],
         ["Whale/Validator Velocity", "🟢 Low", "Low churn; steady", "Whale accumulation intact"],
-        ["Fear & Greed", "🟡 Yellow", sol_fng, "SOL sentiment: Neutral zone"],
+        ["Fear & Greed", "🟡 Yellow", sol_fng, "SOL sentiment: Mixed indicators, balanced overall"],
     ]
     df_sol = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df_sol.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
 
-st.success("🔄 Auto-refreshes every 60s | BTC – ETH – SOL | Specific F&G for ETH/SOL | Global for BTC")
+st.success("🔄 Auto-refreshes every 60s | BTC – ETH – SOL | Proxy F&G for ETH/SOL (Update in code daily)")
