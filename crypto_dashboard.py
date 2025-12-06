@@ -57,15 +57,45 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Table styling
-def style_signals(val):
-    if any(x in val for x in ["Low", "Positive", "Strong"]):
-        return "background-color: #D1FAE5; color: #065F46"
-    elif any(x in val for x in ["Yellow", "Neutral", "Medium-Low", "Mixed"]):
-        return "background-color: #FEF3C7; color: #92400E"
-    elif "Neutral" in val:
-        return "background-color: #F3F4F6; color: #374151"
-    return ""
+# Function to render HTML table with hover tooltips
+def render_table(data):
+    html = """
+    <style>
+    table { width: 100%; border-collapse: collapse; font-family: Arial; font-size: 14px; }
+    th, td { border: 1px solid #dee2e6; padding: 8px; text-align: left; }
+    th { background-color: #f8f9fa; }
+    tr:nth-child(even) { background-color: #f8f9fa; }
+    .green { background-color: #D1FAE5; color: #065F46; }
+    .yellow { background-color: #FEF3C7; color: #92400E; }
+    .gray { background-color: #F3F4F6; color: #374151; }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Signal</th>
+                <th>Current</th>
+                <th>Key Note</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    for row in data:
+        metric, signal, current, key_note, tooltip = row
+        signal_class = "green" if "Low" in signal or "Positive" in signal or "Strong" in signal else "yellow" if "Yellow" in signal or "Neutral" in signal or "Medium-Low" in signal or "Mixed" in signal else "gray"
+        html += f"""
+            <tr>
+                <td title="{tooltip}">{metric}</td>
+                <td class="{signal_class}" title="{tooltip}">{signal}</td>
+                <td title="{tooltip}">{current}</td>
+                <td title="{tooltip}">{key_note}</td>
+            </tr>
+        """
+    html += """
+        </tbody>
+    </table>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
@@ -94,11 +124,7 @@ with tab1:
         ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(btc_data)
 
 # ETH Tab
 with tab2:
@@ -124,11 +150,7 @@ with tab2:
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(eth_data)
 
 # SOL Tab
 with tab3:
@@ -154,10 +176,6 @@ with tab3:
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(sol_data)
 
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s")
