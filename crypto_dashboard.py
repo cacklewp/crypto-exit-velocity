@@ -15,7 +15,7 @@ def get_global_fng():
     except:
         return 23
 
-# Proxy values (update daily from CFGI.io)
+# Live F&G values (Dec 6, 2025) — update these daily from CFGI.io
 fng_values = {
     "bitcoin": get_global_fng(),   # Global (23)
     "ethereum": 43,                # ETH-specific
@@ -46,7 +46,7 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Compact BitcoinFear-style dial (80px, even proportions)
+# Perfect BitcoinFear-style dial
 def fng_dial(value):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -57,18 +57,18 @@ def fng_dial(value):
             'axis': {'range': [0, 100], 'tickwidth': 0, 'showticklabels': False},
             'bar': {'color': "darkgray"},
             'bgcolor': "white",
-            'borderwidth': 1,
-            'bordercolor': "lightgray",
+            'borderwidth': 2,
+            'bordercolor': "gray",
             'steps': [
                 {'range': [0, 25], 'color': "red"},
                 {'range': [25, 50], 'color': "orange"},
                 {'range': [50, 75], 'color': "yellow"},
                 {'range': [75, 100], 'color': "green"}
             ],
-            'threshold': {'line': {'color': "black", 'width': 2}, 'thickness': 0.5, 'value': value}
+            'threshold': {'line': {'color': "black", 'width': 4}, 'thickness': 0.75, 'value': value}
         }
     ))
-    fig.update_layout(height=80, margin=dict(l=5, r=5, t=10, b=5), paper_bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(height=130, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)")
     return fig
 
 # Table styling
@@ -87,17 +87,14 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 # BTC Tab
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
-    c1, c2, c3 = st.columns([1.8, 1.4, 1])  # Even ratios: price wider, velocity center, dial narrow
-    with c1:
-        st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
+    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding: 10px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
         st.plotly_chart(fng_dial(fng_values["bitcoin"]), use_container_width=True)
-        st.caption(f"Global: {fng_values['bitcoin']} — {fng_labels['bitcoin']}", text_color="gray")
+        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>Global: {fng_values['bitcoin']} — {fng_labels['bitcoin']}</p>", unsafe_allow_html=True)
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
@@ -116,16 +113,13 @@ with tab1:
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.8, 1.4, 1])
-    with c1:
-        st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
+    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding: 10px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
         st.plotly_chart(fng_dial(fng_values["ethereum"]), use_container_width=True)
-        st.caption(f"ETH-specific: {fng_values['ethereum']} — {fng_labels['ethereum']}", text_color="gray")
+        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>ETH-specific: {fng_values['ethereum']} — {fng_labels['ethereum']}</p>", unsafe_allow_html=True)
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
@@ -144,16 +138,13 @@ with tab2:
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.8, 1.4, 1])
-    with c1:
-        st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
+    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding: 10px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#FF6B6B; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
-        st.markdown("<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center; color:#FF6B6B; margin-bottom:0;'>Medium-Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
         st.plotly_chart(fng_dial(fng_values["solana"]), use_container_width=True)
-        st.caption(f"SOL-specific: {fng_values['solana']} — {fng_labels['solana']}", text_color="gray")
+        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>SOL-specific: {fng_values['solana']} — {fng_labels['solana']}</p>", unsafe_allow_html=True)
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
