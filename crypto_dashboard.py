@@ -56,7 +56,7 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Clean HTML table with hover tooltips
+# Clean HTML table with hover tooltips and proper colors
 def render_table(data):
     html = """
     <style>
@@ -64,9 +64,9 @@ def render_table(data):
     th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
     th { background-color: #f8f9fa; }
     tr:nth-child(even) { background-color: #f9f9f9; }
-    .green { background-color: #D1FAE5 !important; color: #065F46 !important; }
-    .yellow { background-color: #FEF3C7 !important; color: #92400E !important; }
-    .gray { background-color: #F3F4F6 !important; color: #374151 !important; }
+    .green { background-color: #d4edda !important; color: #155724 !important; }
+    .yellow { background-color: #fff3cd !important; color: #856404 !important; }
+    .gray { background-color: #f8f9fa !important; color: #495057 !important; }
     </style>
     <table>
         <thead>
