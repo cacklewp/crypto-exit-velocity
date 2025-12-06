@@ -14,9 +14,9 @@ def get_global_fng():
         r = requests.get("https://api.alternative.me/fng/?limit=1")
         return r.json()["data"][0]["value"]
     except:
-        return "23"
+        return "28"  # Fallback to current real value
 
-# Proxy for coin-specific F&G (update daily from CFGI.io)
+# Proxy for coin-specific F&G (update these daily from CFGI.io)
 fng_proxies = {
     "ethereum": "43 (Neutral)",
     "solana": "42 (Neutral)"
@@ -35,6 +35,7 @@ def get_price(coin):
                 return data[coin]["usd"], round(data[coin].get("usd_24h_change", 0), 2)
     except:
         pass
+    # Updated fallbacks to Dec 2025 levels
     fallback = {"bitcoin": (89300, -3.3), "ethereum": (3030, -1.8), "solana": (140, -2.1)}
     return fallback.get(coin, (0, 0))
 
@@ -50,32 +51,36 @@ sol_fng = fng_proxies.get("solana", global_fng)
 eastern = pytz.timezone('America/New_York')
 now_est = datetime.now(eastern).strftime("%b %d, %Y %I:%M:%S %p")
 
-# BitcoinFear-style half-circle dial (small, clean)
-def fng_dial(value, title="F&G"):
+# BitcoinFear-style half-circle dial (exact match to image)
+def fng_dial(value, title="Fear & Greed"):
     val = float(value.split()[0]) if isinstance(value, str) else float(value)
     fig = go.Figure(go.Indicator(
-        mode="gauge+number",
-        value=val,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': title, 'font': {'size': 10, 'color': 'black'}},
-        gauge={
+        mode = "gauge+number",
+        value = val,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': title, 'font': {'size': 12}},
+        gauge = {
             'shape': "angular",
-            'axis': {'range': [0, 100], 'tickwidth': 0, 'tickcolor': "white"},  # No ticks for clean look
-            'bar': {'color': "lightgray"},
+            'axis': {'range': [0, 100], 'tickwidth': 0, 'showticklabels': False},
+            'bar': {'color': "gray", 'thickness': 0.1},
+            'bgcolor': "white",
+            'borderwidth': 0,
             'steps': [
-                {'range': [0, 25], 'color': "red"},      # Extreme Fear
-                {'range': [25, 50], 'color': "orange"},  # Fear
-                {'range': [50, 75], 'color': "yellow"},  # Neutral/Greed
-                {'range': [75, 100], 'color': "green"}   # Extreme Greed
+                {'range': [0, 20], 'color': "red"},
+                {'range': [20, 40], 'color': "orangered"},
+                {'range': [40, 60], 'color': "gold"},
+                {'range': [60, 80], 'color': "limegreen"},
+                {'range': [80, 100], 'color': "green"}
             ],
             'threshold': {
-                'line': {'color': "black", 'width': 3},
+                'line': {'color': "gray", 'width': 4},
                 'thickness': 0.75,
                 'value': val
             }
         }
     ))
-    fig.update_layout(height=100, margin=dict(l=5, r=5, t=20, b=5), paper_bgcolor='rgba(0,0,0,0)')
+    fig.update_layout(height=150, margin=dict(l=20, r=20, t=50, b=10), paper_bgcolor='rgba(0,0,0,0)', font={'size': 18})
+    fig.update_traces(number = {'font': {'size': 40, 'color': "black"}})
     return fig
 
 # Style for tables
