@@ -46,7 +46,7 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Perfect BitcoinFear-style dial
+# Perfect BitcoinFear-style dial (no invalid props)
 def fng_dial(value):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -55,20 +55,17 @@ def fng_dial(value):
         gauge={
             'shape': "angular",
             'axis': {'range': [0, 100], 'tickwidth': 0, 'showticklabels': False},
-            'bar': {'color': "darkgray"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
+            'bar': {'color': "lightgray"},
             'steps': [
                 {'range': [0, 25], 'color': "red"},
                 {'range': [25, 50], 'color': "orange"},
                 {'range': [50, 75], 'color': "yellow"},
                 {'range': [75, 100], 'color': "green"}
             ],
-            'threshold': {'line': {'color': "black", 'width': 4}, 'thickness': 0.75, 'value': value}
+            'threshold': {'line': {'color': "black", 'width': 3}, 'value': value}
         }
     ))
-    fig.update_layout(height=130, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(height=100, margin=dict(l=5, r=5, t=15, b=5), paper_bgcolor="rgba(0,0,0,0)")
     return fig
 
 # Table styling
