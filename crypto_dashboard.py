@@ -9,7 +9,7 @@ import re
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
 # Global F&G (Alternative.me)
-@st.cache_data(ttl=300)  # 5-min cache for sentiment
+@st.cache_data(ttl=300)  # 5-min cache
 def get_global_fng():
     try:
         r = requests.get("https://api.alternative.me/fng/?limit=1")
@@ -18,7 +18,7 @@ def get_global_fng():
         return "25"  # Fallback
 
 # Coin-specific F&G from CFGI.io (scrape current score)
-@st.cache_data(ttl=900)  # 15-min cache, matches CFGI update frequency
+@st.cache_data(ttl=900)  # 15-min cache
 def get_cfgi_fng(coin):
     url_map = {
         "ethereum": "https://cfgi.io/ethereum-fear-greed-index/",
@@ -29,14 +29,21 @@ def get_cfgi_fng(coin):
     try:
         r = requests.get(url_map[coin], timeout=10)
         soup = BeautifulSoup(r.text, 'html.parser')
-        # Parse the "Now" score from historical values section (e.g., "Now Neutral 43")
+        # Look for "Now [Classification] [Value]" in headings or text
         text = soup.find('h3', string=re.compile(r'Now.*')) or soup.find(text=re.compile(r'Now.*'))
         if text:
-            match = re.search(r'Now (\w+) (\d+)', text.get_text())
+            match = re.search(r'Now (\w+) (\d+)', text.get_text(), re.IGNORECASE)
             if match:
                 classification = match.group(1).capitalize()
                 value = match.group(2)
                 return f"{value} ({classification})"
+        # Fallback to historical "Now" if not found
+        history = soup.find_all(text=re.compile(r'Neutral \d+|Fear \d+|Greed \d+'))
+        if history:
+            latest = history[-1].strip()
+            match = re.search(r'(\d+) \((Neutral|Fear|Greed)\)', latest, re.IGNORECASE)
+            if match:
+                return f"{match.group(1)} ({match.group(2).capitalize()})"
         return None
     except:
         return None
@@ -54,7 +61,7 @@ def get_price(coin):
                 return data[coin]["usd"], round(data[coin].get("usd_24h_change", 0), 2)
     except:
         pass
-    # Updated fallbacks to Dec 2025 levels
+    # Updated fallbacks
     fallback = {"bitcoin": (89300, -3.3), "ethereum": (3030, -1.8), "solana": (140, -2.1)}
     return fallback.get(coin, (0, 0))
 
@@ -78,7 +85,7 @@ col2.metric("ETH", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
 col3.metric("SOL", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
 st.markdown(f"**Updated (EST):** {now_est} | Global F&G: {global_fng} (Extreme Fear)")
 
-# Style function for colors
+# Style function
 def style_signals(val):
     if "Low" in val or "Positive" in val or "Strong" in val or "🟢" in val:
         return "background-color: #D1FAE5; color: #065F46"  # Green
@@ -91,7 +98,7 @@ def style_signals(val):
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 
-# BTC Tab (Global F&G)
+# BTC Tab
 with tab1:
     st.header("🚦 Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
@@ -112,7 +119,7 @@ with tab1:
     df_btc = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df_btc.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
 
-# ETH Tab (ETH-specific F&G)
+# ETH Tab
 with tab2:
     st.header("🚦 Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
@@ -133,7 +140,7 @@ with tab2:
     df_eth = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df_eth.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
 
-# SOL Tab (SOL-specific F&G)
+# SOL Tab
 with tab3:
     st.header("🚦 Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns(3)
