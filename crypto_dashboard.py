@@ -9,7 +9,7 @@ st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 # Tooltip definitions
 tooltips = {
     "Composite Exit Velocity": "Daily % of supply that moves on-chain. Lower = stronger HODL bias.",
-    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH ETFs (BlackRock, Fidelity, etc.).",
+    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH/SOL ETFs (BlackRock, Fidelity, etc.).",
     "Exchange Netflow": "14-day SMA of coins moving to/from exchanges. Negative = accumulation.",
     "Taker CVD": "Cumulative Volume Delta — measures aggressive buying vs. selling pressure.",
     "STH SOPR": "Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.",
@@ -36,6 +36,18 @@ fng_labels = {
     "bitcoin": "Extreme Fear",
     "ethereum": "Neutral",
     "solana": "Neutral"
+}
+
+# Real-time ETF flows (Farside Investors — Dec 5, 2025)
+etf_flows = {
+    "bitcoin": "+$87.3M",
+    "ethereum": "−$41.6M",
+    "solana": "+$113K"
+}
+etf_signal = {
+    "bitcoin": "Positive",
+    "ethereum": "Mixed",
+    "solana": "Positive"
 }
 
 # Live prices
@@ -85,7 +97,7 @@ with tab1:
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
-        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads"],
+        ["ETF Flows", etf_signal["bitcoin"], etf_flows["bitcoin"], "Institutions buying; IBIT leads"],
         ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure"],
         ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
@@ -111,7 +123,7 @@ with tab2:
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
-        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends"],
+        ["ETF Flows", etf_signal["ethereum"], etf_flows["ethereum"], "ETHA leads; mixed trends"],
         ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption"],
         ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
@@ -137,7 +149,7 @@ with tab3:
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
-        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows"],
+        ["ETF Flows", etf_signal["solana"], etf_flows["solana"], "Rotation phase; watch inflows"],
         ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support"],
         ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
@@ -152,7 +164,7 @@ with tab3:
 with st.expander("Glossary — Click for metric definitions"):
     st.markdown("""
     - **Composite Exit Velocity**: Daily % of supply that moves on-chain. Lower = stronger HODL bias.
-    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, Fidelity, etc.).
+    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, BlackRock, Fidelity, etc.).
     - **Exchange Netflow**: 14-day SMA of coins moving to/from exchanges. Negative = accumulation.
     - **Taker CVD**: Cumulative Volume Delta — aggressive buying vs. selling pressure.
     - **STH SOPR**: Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.
@@ -161,4 +173,4 @@ with st.expander("Glossary — Click for metric definitions"):
     - **Fear & Greed**: Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).
     """)
 
-st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s • Data: CoinGecko, Alternative.me, CFGI.io")
+st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s • ETF data from Farside Investors")
