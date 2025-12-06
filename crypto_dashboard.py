@@ -20,6 +20,14 @@ def get_price(coin):
     except:
         pass
     
+    # Fallback prices — app never crashes
+    fallback = {"bitcoin": (57450, 1.4), "ethereum": (3150, 1.1), "solana": (143, 2.3)}
+    price, change = fallback.get(coin, (0, 0))
+    st.warning(f"Using fallback price for {coin.upper()} (CoinGecko issue)")
+    return price, change
+    except:
+        pass
+    
     # Fallback prices so the app never crashes
     fallback = {"bitcoin": (57450, 1.4), "ethereum": (3150, 1.1), "solana": (143, 2.3)}
     price, change = fallback.get(coin, (0, 0))
@@ -117,6 +125,7 @@ with tab3:
 
 
 st.success("Live • Auto-refresh every 60s • BTC – ETH – SOL")
+
 
 
 
