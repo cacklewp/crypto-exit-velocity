@@ -50,7 +50,7 @@ def fng_gauge(value, title="Fear & Greed", height=200):
         delta={'reference': 50, 'increasing': {'color': "green"}, 'decreasing': {'color': "red"}},
         gauge={
             'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "darkblue"},
+            'bar': {'color': "darkblue", 'thickness': 0.3},  # Thin bar for semi-circle look
             'steps': [
                 {'range': [0, 25], 'color': "red"},  # Extreme Fear
                 {'range': [25, 50], 'color': "orange"},  # Fear
@@ -61,11 +61,11 @@ def fng_gauge(value, title="Fear & Greed", height=200):
                 'line': {'color': "red", 'width': 4},
                 'thickness': 0.75,
                 'value': value
-            }
+            },
+            'shape': "angular"  # Ensures half-circle arc
         }
     ))
     fig.update_layout(height=height, margin=dict(l=10, r=10, t=30, b=10), font={'family': "Arial", 'size': 12})
-    fig.update_traces(clamp_max=value)  # Half-circle effect
     return fig
 
 # Fetch data
@@ -121,7 +121,7 @@ with tab1:
         ["Fear & Greed", "🟡 Yellow", global_fng, "Extreme fear; contrarian buy zone"],
     ]
     df_btc = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df_btc.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
+    st.dataframe(df_btc.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
 # ETH Tab
 with tab2:
@@ -143,7 +143,7 @@ with tab2:
         ["Fear & Greed", "🟡 Yellow", eth_fng, "ETH sentiment: Balanced market psychology"],
     ]
     df_eth = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df_eth.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
+    st.dataframe(df_eth.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
 # SOL Tab
 with tab3:
@@ -165,6 +165,6 @@ with tab3:
         ["Fear & Greed", "🟡 Yellow", sol_fng, "SOL sentiment: Mixed indicators, balanced overall"],
     ]
     df_sol = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df_sol.style.applymap(style_signals, subset=["Signal"]), use_container_width=True, hide_index=True)
+    st.dataframe(df_sol.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
 st.success("🔄 Auto-refreshes every 60s | BTC – ETH – SOL | F&G Gauges Live | Proxy Specific Values")
