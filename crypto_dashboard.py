@@ -7,7 +7,7 @@ import pytz
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
-# Global F&G
+# Global F&G (Alternative.me)
 @st.cache_data(ttl=300)
 def get_global_fng():
     try:
@@ -16,7 +16,7 @@ def get_global_fng():
     except:
         return "23"
 
-# Proxy for coin-specific F&G (real values as of Dec 6, 2025)
+# Proxy for coin-specific F&G (update daily from CFGI.io)
 fng_proxies = {
     "ethereum": "43 (Neutral)",
     "solana": "42 (Neutral)"
@@ -50,35 +50,38 @@ sol_fng = fng_proxies.get("solana", global_fng)
 eastern = pytz.timezone('America/New_York')
 now_est = datetime.now(eastern).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Small elegant half-circle gauge
-def fng_gauge_small(value, title="F&G"):
+# Classic BitcoinFear half-circle dial
+def fng_dial(value, title="F&G"):
     val = float(value.split()[0]) if isinstance(value, str) else float(value)
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
         value=val,
         domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': f"<b>{title}</b>", 'font': {'size': 11}},
+        title={'text': title, 'font': {'size': 10, 'color': 'black'}},
         gauge={
-            'shape': "bullet",
-            'axis': {'range': [0, 100]},
-            'bar': {'color': "#2E86AB"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
+            'shape': "angular",
+            'axis': {'range': [0, 100], 'tickwidth': 0.5, 'tickcolor': "gray"},
+            'bar': {'color': "lightgray"},
             'steps': [
-                {'range': [0, 25], 'color': '#FF6B6B'},
-                {'range': [25, 50], 'color': '#FFB96B'},
-                {'range': [50, 75], 'color': '#A0D468'},
-                {'range': [75, 100], 'color': '#4CAF50'}
+                {'range': [0, 25], 'color': "red"},      # Extreme Fear
+                {'range': [25, 50], 'color': "orange"},  # Fear
+                {'range': [50, 75], 'color': "yellow"},  # Neutral/Greed
+                {'range': [75, 100], 'color': "green"}   # Extreme Greed
             ],
+            'threshold': {
+                'line': {'color': "black", 'width': 3},
+                'thickness': 0.75,
+                'value': val
+            }
         }
     ))
-    fig.update_layout(height=130, width=230, margin=dict(l=10, r=10, t=25, b=10))
+    fig.update_layout(height=100, margin=dict(l=5, r=5, t=20, b=5), paper_bgcolor='rgba(0,0,0,0)')
+    fig.update_traces(valueformat=".0f")
     return fig
 
 # Style for tables
 def style_signals(val):
-    if "Low" in val or "Positive" in val or "Strong" in val or "Low" in val:
+    if "Low" in val or "Positive" in val or "Strong" in val:
         return "background-color: #D1FAE5; color: #065F46"
     elif "Yellow" in val or "Neutral" in val or "Medium-Low" in val or "Mixed" in val:
         return "background-color: #FEF3C7; color: #92400E"
@@ -89,7 +92,7 @@ def style_signals(val):
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 
-# BTC
+# BTC Tab
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.8, 1.4, 1])
@@ -99,7 +102,7 @@ with tab1:
         st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
-        st.plotly_chart(fng_gauge_small(global_fng, "F&G (Global)"), use_container_width=True)
+        st.plotly_chart(fng_dial(global_fng, "F&G (Global)"), use_container_width=True)
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
@@ -114,7 +117,7 @@ with tab1:
     df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
-# ETH
+# ETH Tab
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.8, 1.4, 1])
@@ -124,7 +127,7 @@ with tab2:
         st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
-        st.plotly_chart(fng_gauge_small(eth_fng, "F&G (ETH-specific)"), use_container_width=True)
+        st.plotly_chart(fng_dial(eth_fng, "F&G (ETH-specific)"), use_container_width=True)
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
@@ -139,7 +142,7 @@ with tab2:
     df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
     st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
-# SOL
+# SOL Tab
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.8, 1.4, 1])
@@ -149,7 +152,7 @@ with tab3:
         st.markdown("<h2 style='text-align:center; color:#FF6B6B; margin-bottom:0;'>Medium-Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
-        st.plotly_chart(fng_gauge_small(sol_fng, "F&G (SOL-specific)"), use_container_width=True)
+        st.plotly_chart(fng_dial(sol_fng, "F&G (SOL-specific)"), use_container_width=True)
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
