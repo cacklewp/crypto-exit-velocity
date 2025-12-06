@@ -50,7 +50,7 @@ sol_fng = fng_proxies.get("solana", global_fng)
 eastern = pytz.timezone('America/New_York')
 now_est = datetime.now(eastern).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Classic BitcoinFear half-circle dial
+# Small half-circle dial (BitcoinFear style)
 def fng_dial(value, title="F&G"):
     val = float(value.split()[0]) if isinstance(value, str) else float(value)
     fig = go.Figure(go.Indicator(
@@ -63,10 +63,10 @@ def fng_dial(value, title="F&G"):
             'axis': {'range': [0, 100], 'tickwidth': 0.5, 'tickcolor': "gray"},
             'bar': {'color': "lightgray"},
             'steps': [
-                {'range': [0, 25], 'color': "red"},      # Extreme Fear
-                {'range': [25, 50], 'color': "orange"},  # Fear
-                {'range': [50, 75], 'color': "yellow"},  # Neutral/Greed
-                {'range': [75, 100], 'color': "green"}   # Extreme Greed
+                {'range': [0, 25], 'color': "red"},
+                {'range': [25, 50], 'color': "orange"},
+                {'range': [50, 75], 'color': "yellow"},
+                {'range': [75, 100], 'color': "green"}
             ],
             'threshold': {
                 'line': {'color': "black", 'width': 3},
@@ -76,7 +76,7 @@ def fng_dial(value, title="F&G"):
         }
     ))
     fig.update_layout(height=100, margin=dict(l=5, r=5, t=20, b=5), paper_bgcolor='rgba(0,0,0,0)')
-    fig.update_traces(valueformat=".0f")
+    fig.update_traces(clamps=False)  # Ensures smooth arc
     return fig
 
 # Style for tables
@@ -127,7 +127,7 @@ with tab2:
         st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
     with c3:
-        st.plotly_chart(fng_dial(eth_fng, "F&G (ETH-specific)"), use_container_width=True)
+        st.plotly_chart(fng_dial(eth_fng, "F&G (ETH-specific)"), use_container_height=True)
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
