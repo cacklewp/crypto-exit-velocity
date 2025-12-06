@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="Crypto Exit Velocity", layout="wide")
+st.set_page_config(page_title="Exit Velocity", layout="wide", initial_sidebar_state="collapsed", menu_items={}, theme="light")
 
 # Live price + change
 @st.cache_data(ttl=60)
@@ -90,5 +90,6 @@ with tab3:
     df = pd.DataFrame(sol, columns=["Metric","Signal","Current","Note"])
     st.table(df.style.map(lambda v: "background:#d4edda" if v in ["Low","Positive","Strong"]
                           else "background:#fff3cd" if v in ["Medium-Low","Mixed","Yellow","Neutral"] else "", subset=["Signal"]))
+
 
 st.success("Live • Auto-refresh every 60s • BTC – ETH – SOL")
