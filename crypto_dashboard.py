@@ -132,4 +132,31 @@ with tab2:
         ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
     ]
     df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df.style.map(style_signals
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+
+# SOL Tab
+with tab3:
+    st.header("Solana Exit Velocity Dashboard")
+    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
+    with c2:
+        st.markdown("<h2 style='text-align:center; color:#FF6B6B; margin-bottom:0;'>Medium-Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
+    with c3:
+        st.plotly_chart(fng_dial(fng_values["solana"]), use_container_width=True)
+        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>SOL-specific: {fng_values['solana']} — {fng_labels['solana']}</p>", unsafe_allow_html=True)
+
+    sol_data = [
+        ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
+        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows"],
+        ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising"],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support"],
+        ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
+        ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss"],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact"],
+        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone"],
+    ]
+    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+
+st.success("Auto-refresh every 60s • Composite Velocity = Core Focus • ETH/SOL Specific F&G")
