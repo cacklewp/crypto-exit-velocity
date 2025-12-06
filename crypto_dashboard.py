@@ -3,9 +3,20 @@ import requests
 import pandas as pd
 from datetime import datetime
 import pytz
-import time
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
+
+# Tooltip definitions
+tooltips = {
+    "Composite Exit Velocity": "Daily % of supply that moves on-chain. Lower = stronger HODL bias.",
+    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH ETFs (BlackRock, Fidelity, etc.).",
+    "Exchange Netflow": "14-day SMA of coins moving to/from exchanges. Negative = accumulation.",
+    "Taker CVD": "Cumulative Volume Delta — measures aggressive buying vs. selling pressure.",
+    "STH SOPR": "Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.",
+    "Supply in Profit": "% of circulating supply with cost basis below current price.",
+    "Whale/Miner Velocity": "How actively large holders/miners are spending.",
+    "Fear & Greed": "Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).",
+}
 
 # Global F&G
 @st.cache_data(ttl=300)
@@ -43,13 +54,6 @@ btc_price, btc_change = get_price("bitcoin")
 eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
-# Velocity context (full value + explanation)
-velocity_context = {
-    "bitcoin": {"value": "0.02–0.05%/day", "explanation": "Low selling pressure; HODL bias strong", "help": "Daily % of supply that moves on-chain. Lower = stronger HODL bias."},
-    "ethereum": {"value": "0.03–0.06%/day", "explanation": "Minimal churn; supply stable", "help": "Daily % of supply that moves on-chain. Lower = stronger HODL bias."},
-    "solana": {"value": "0.04–0.07%/day", "explanation": "Balanced churn; stabilizing", "help": "Daily % of supply that moves on-chain. Lower = stronger HODL bias."},
-}
-
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
@@ -73,25 +77,29 @@ with tab1:
     with c1:
         st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
-        st.markdown("<div style='text-align:center; padding:15px; background-color: #f0f8ff; border-radius: 8px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>{velocity_context['bitcoin']['explanation']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#f0f8ff; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#2E86AB; margin:0;'>Low</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.02–0.05%/day — Minimal selling pressure</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help="Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).")
+        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help=tooltips["Fear & Greed"])
 
     btc_data = [
-        ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
-        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads"],
-        ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias"],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure"],
-        ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
-        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss"],
-        ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts"],
-        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone"],
+        ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure", tooltips["Composite Exit Velocity"]],
+        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads", tooltips["ETF Flows"]],
+        ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias", tooltips["Exchange Netflow"]],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure", tooltips["Taker CVD"]],
+        ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak", tooltips["STH SOPR"]],
+        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss", tooltips["Supply in Profit"]],
+        ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts", tooltips["Whale/Miner Velocity"]],
+        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    styled_df = df.style.map(style_signals, subset=["Signal"])
+    for i, row in df.iterrows():
+        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
+    st.dataframe(styled_df, width='stretch', hide_index=True)
 
 # ETH Tab
 with tab2:
@@ -100,25 +108,29 @@ with tab2:
     with c1:
         st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
-        st.markdown("<div style='text-align:center; padding:15px; background-color: #f0f8ff; border-radius: 8px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#2E86AB; margin:0;'>Low</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>{velocity_context['ethereum']['explanation']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#f0f8ff; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#2E86AB; margin:0;'>Low</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.03–0.06%/day — Minimal churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help="Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).")
+        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help=tooltips["Fear & Greed"])
 
     eth_data = [
-        ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
-        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends"],
-        ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias"],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption"],
-        ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
-        ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater"],
-        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive"],
-        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
+        ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable", tooltips["Composite Exit Velocity"]],
+        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends", tooltips["ETF Flows"]],
+        ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias", tooltips["Exchange Netflow"]],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption", tooltips["Taker CVD"]],
+        ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven", tooltips["STH SOPR"]],
+        ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater", tooltips["Supply in Profit"]],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive", tooltips["Whale/Miner Velocity"]],
+        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    styled_df = df.style.map(style_signals, subset=["Signal"])
+    for i, row in df.iterrows():
+        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
+    st.dataframe(styled_df, width='stretch', hide_index=True)
 
 # SOL Tab
 with tab3:
@@ -127,24 +139,28 @@ with tab3:
     with c1:
         st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
-        st.markdown("<div style='text-align:center; padding:15px; background-color: #f0f8ff; border-radius: 8px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#FF6B6B; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
-        st.markdown(f"<p style='font-size:16px; color:#666; margin:5px 0 0 0;'>{velocity_context['solana']['explanation']}</p>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#fff0f0; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
+        st.markdown("<h1 style='color:#FF6B6B; margin:0;'>Medium-Low</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
+        st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.04–0.07%/day — Balanced churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help="Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).")
+        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help=tooltips["Fear & Greed"])
 
     sol_data = [
-        ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
-        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows"],
-        ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising"],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support"],
-        ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
-        ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss"],
-        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact"],
-        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone"],
+        ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing", tooltips["Composite Exit Velocity"]],
+        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows", tooltips["ETF Flows"]],
+        ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising", tooltips["Exchange Netflow"]],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support", tooltips["Taker CVD"]],
+        ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy", tooltips["STH SOPR"]],
+        ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss", tooltips["Supply in Profit"]],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact", tooltips["Whale/Miner Velocity"]],
+        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
-    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    styled_df = df.style.map(style_signals, subset=["Signal"])
+    for i, row in df.iterrows():
+        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
+    st.dataframe(styled_df, width='stretch', hide_index=True)
 
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s")
