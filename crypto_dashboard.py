@@ -3,8 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 
-st.set_page_config(page_title="Exit Velocity", layout="wide", initial_sidebar_state="collapsed", menu_items={}, theme="light")
-
+st.set_page_config(page_title="Exit Velocity", layout="wide", theme="light")
 # Live price + change
 @st.cache_data(ttl=60)
 def get_price(coin):
@@ -93,3 +92,4 @@ with tab3:
 
 
 st.success("Live • Auto-refresh every 60s • BTC – ETH – SOL")
+
