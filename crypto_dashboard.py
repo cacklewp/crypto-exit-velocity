@@ -46,7 +46,7 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Perfect BitcoinFear-style dial (tested, no invalid props)
+# Perfect BitcoinFear-style dial
 def fng_dial(value):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -55,17 +55,20 @@ def fng_dial(value):
         gauge={
             'shape': "angular",
             'axis': {'range': [0, 100], 'tickwidth': 0, 'showticklabels': False},
-            'bar': {'color': "lightgray"},
+            'bar': {'color': "darkgray"},
+            'bgcolor': "white",
+            'borderwidth': 2,
+            'bordercolor': "gray",
             'steps': [
                 {'range': [0, 25], 'color': "red"},
                 {'range': [25, 50], 'color': "orange"},
                 {'range': [50, 75], 'color': "yellow"},
                 {'range': [75, 100], 'color': "green"}
             ],
-            'threshold': {'line': {'color': "black", 'width': 3}, 'value': value}
+            'threshold': {'line': {'color': "black", 'width': 4}, 'thickness': 0.75, 'value': value}
         }
     ))
-    fig.update_layout(height=100, margin=dict(l=5, r=5, t=15, b=5), paper_bgcolor="rgba(0,0,0,0)")
+    fig.update_layout(height=130, margin=dict(l=10, r=10, t=10, b=10), paper_bgcolor="rgba(0,0,0,0)")
     return fig
 
 # Table styling
@@ -99,4 +102,34 @@ with tab1:
         ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias"],
         ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure"],
         ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
-        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30
+        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss"],
+        ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts"],
+        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone"],
+    ]
+    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
+    st.dataframe(df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
+
+# ETH Tab
+with tab2:
+    st.header("Ethereum Exit Velocity Dashboard")
+    c1, c2, c3 = st.columns([1.8, 1.4, 1])
+    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
+    with c2:
+        st.markdown("<h2 style='text-align:center; color:#2E86AB; margin-bottom:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center; font-size:18px; color:#555; margin-top:-10px;'>Composite Velocity</p>", unsafe_allow_html=True)
+    with c3:
+        st.plotly_chart(fng_dial(fng_values["ethereum"]), use_container_width=True)
+        st.markdown(f"<p style='text-align:center; color:gray; font-size:12px; margin:0;'>ETH-specific: {fng_values['ethereum']} — {fng_labels['ethereum']}</p>", unsafe_allow_html=True)
+
+    eth_data = [
+        ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
+        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends"],
+        ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias"],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption"],
+        ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
+        ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater"],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive"],
+        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
+    ]
+    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
+    st.dataframe(df.style.map(style_signals
