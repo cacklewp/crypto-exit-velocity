@@ -1,6 +1,5 @@
 import streamlit as st
 import requests
-import pandas as pd
 from datetime import datetime
 import pytz
 
@@ -57,15 +56,45 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# Table styling
-def style_signals(val):
-    if any(x in val for x in ["Low", "Positive", "Strong"]):
-        return "background-color: #D1FAE5; color: #065F46"
-    elif any(x in val for x in ["Yellow", "Neutral", "Medium-Low", "Mixed"]):
-        return "background-color: #FEF3C7; color: #92400E"
-    elif "Neutral" in val:
-        return "background-color: #F3F4F6; color: #374151"
-    return ""
+# HTML table with hover tooltips (no pandas errors)
+def render_table(data):
+    html = """
+    <style>
+    table { width: 100%; border-collapse: collapse; font-family: Arial; font-size: 14px; }
+    th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
+    th { background-color: #f8f9fa; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .green { background-color: #d4edda; color: #155724; }
+    .yellow { background-color: #fff3cd; color: #856404; }
+    .gray { background-color: #f8f9fa; color: #495057; }
+    </style>
+    <table>
+        <thead>
+            <tr>
+                <th>Metric</th>
+                <th>Signal</th>
+                <th>Current</th>
+                <th>Key Note</th>
+            </tr>
+        </thead>
+        <tbody>
+    """
+    for row in data:
+        metric, signal, current, note, tooltip = row
+        signal_class = "green" if "Low" in signal or "Positive" in signal or "Strong" in signal else "yellow" if "Yellow" in signal or "Neutral" in signal or "Medium-Low" in signal or "Mixed" in signal else "gray"
+        html += f"""
+            <tr>
+                <td title="{tooltip}">{metric}</td>
+                <td class="{signal_class}" title="{tooltip}">{signal}</td>
+                <td title="{tooltip}">{current}</td>
+                <td title="{tooltip}">{note}</td>
+            </tr>
+        """
+    html += """
+        </tbody>
+    </table>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
 # Tabs
 tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
@@ -74,16 +103,15 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1:
-        st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%", help="Live spot price from CoinGecko")
+    with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding:20px; background-color:#f0f8ff; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#2E86AB; margin:0;'>Low</h1>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#e3f2fd; border-radius:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#1976d2; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.02–0.05%/day — Minimal selling pressure</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}")
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure", tooltips["Composite Exit Velocity"]],
@@ -95,26 +123,21 @@ with tab1:
         ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(btc_data)
 
 # ETH Tab
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1:
-        st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%", help="Live spot price from CoinGecko")
+    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding:20px; background-color:#f0f8ff; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#2E86AB; margin:0;'>Low</h1>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#e3f2fd; border-radius:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#1976d2; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.03–0.06%/day — Minimal churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}")
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable", tooltips["Composite Exit Velocity"]],
@@ -126,26 +149,21 @@ with tab2:
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(eth_data)
 
 # SOL Tab
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1:
-        st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%", help="Live spot price from CoinGecko")
+    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding:20px; background-color:#fff0f0; border-radius:10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);'>", unsafe_allow_html=True)
-        st.markdown("<h1 style='color:#FF6B6B; margin:0;'>Medium-Low</h1>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#ffebee; border-radius:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#c62828; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.04–0.07%/day — Balanced churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
     with c3:
-        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help=tooltips["Fear & Greed"])
+        st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}")
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing", tooltips["Composite Exit Velocity"]],
@@ -157,10 +175,6 @@ with tab3:
         ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact", tooltips["Whale/Miner Velocity"]],
         ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone", tooltips["Fear & Greed"]],
     ]
-    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
-    styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
-    st.dataframe(styled_df, width='stretch', hide_index=True)
+    render_table(sol_data)
 
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s")
