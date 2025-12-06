@@ -85,19 +85,17 @@ with tab1:
         st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help=tooltips["Fear & Greed"])
 
     btc_data = [
-        ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure", tooltips["Composite Exit Velocity"]],
-        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads", tooltips["ETF Flows"]],
-        ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias", tooltips["Exchange Netflow"]],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure", tooltips["Taker CVD"]],
-        ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak", tooltips["STH SOPR"]],
-        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss", tooltips["Supply in Profit"]],
-        ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts", tooltips["Whale/Miner Velocity"]],
-        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone", tooltips["Fear & Greed"]],
+        ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
+        ["ETF Flows", "Positive", "+$140M (1d)", "Institutions buying; IBIT leads"],
+        ["Exchange Netflow", "Strong", "−7K BTC/day", "Multi-year lows; HODL bias"],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced pressure"],
+        ["STH SOPR", "Yellow", "0.96–0.99", "Losses easing; capitulation near peak"],
+        ["Supply in Profit", "Neutral", "70%", "Bottom zone; ~30% at loss"],
+        ["Whale/Miner Velocity", "Low", "1.3×; miners steady", "Low churn; supportive cohorts"],
+        ["Fear & Greed", "Yellow", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", "Extreme fear; contrarian buy zone"],
     ]
-    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    df = pd.DataFrame(btc_data, columns=["Metric", "Signal", "Current", "Key Note"])
     styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
     st.dataframe(styled_df, width='stretch', hide_index=True)
 
 # ETH Tab
@@ -115,19 +113,17 @@ with tab2:
         st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help=tooltips["Fear & Greed"])
 
     eth_data = [
-        ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable", tooltips["Composite Exit Velocity"]],
-        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends", tooltips["ETF Flows"]],
-        ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias", tooltips["Exchange Netflow"]],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption", tooltips["Taker CVD"]],
-        ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven", tooltips["STH SOPR"]],
-        ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater", tooltips["Supply in Profit"]],
-        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive", tooltips["Whale/Miner Velocity"]],
-        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone", tooltips["Fear & Greed"]],
+        ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
+        ["ETF Flows", "Mixed", "+$140M (1d)", "ETHA leads; mixed trends"],
+        ["Exchange Netflow", "Strong", "−40K ETH/day", "Outflows; staking + HODL bias"],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Balanced absorption"],
+        ["STH SOPR", "Yellow", "0.95–0.99", "Losses easing; near breakeven"],
+        ["Supply in Profit", "Neutral", "65–68%", "Bottom zone; ~32% underwater"],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Accumulation supportive"],
+        ["Fear & Greed", "Yellow", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", "ETH sentiment: Neutral zone"],
     ]
-    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    df = pd.DataFrame(eth_data, columns=["Metric", "Signal", "Current", "Key Note"])
     styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
     st.dataframe(styled_df, width='stretch', hide_index=True)
 
 # SOL Tab
@@ -145,19 +141,17 @@ with tab3:
         st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help=tooltips["Fear & Greed"])
 
     sol_data = [
-        ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing", tooltips["Composite Exit Velocity"]],
-        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows", tooltips["ETF Flows"]],
-        ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising", tooltips["Exchange Netflow"]],
-        ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support", tooltips["Taker CVD"]],
-        ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy", tooltips["STH SOPR"]],
-        ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss", tooltips["Supply in Profit"]],
-        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact", tooltips["Whale/Miner Velocity"]],
-        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone", tooltips["Fear & Greed"]],
+        ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
+        ["ETF Flows", "Mixed", "−$25M (5d)", "Rotation phase; watch inflows"],
+        ["Exchange Netflow", "Strong", "−8K SOL/day", "Sustained outflows; self-custody rising"],
+        ["Taker CVD", "Neutral", "Neutral (90d)", "Absorption at $130 support"],
+        ["STH SOPR", "Yellow", "0.92–0.98", "Capitulation easing; top-heavy"],
+        ["Supply in Profit", "Low", "20–22%", "2025 low zone; ~78% at loss"],
+        ["Whale/Validator Velocity", "Low", "Low churn; steady", "Whale accumulation intact"],
+        ["Fear & Greed", "Yellow", f"{fng_values['solana']} — {fng_labels['solana']}", "SOL sentiment: Neutral zone"],
     ]
-    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note", "Tooltip"])
+    df = pd.DataFrame(sol_data, columns=["Metric", "Signal", "Current", "Key Note"])
     styled_df = df.style.map(style_signals, subset=["Signal"])
-    for i, row in df.iterrows():
-        styled_df = styled_df.set_tooltips([row["Tooltip"]], props='visibility: hidden; position: absolute; background-color: #333; color: white; padding: 8px; border-radius: 4px; z-index: 100;')
     st.dataframe(styled_df, width='stretch', hide_index=True)
 
 st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s")
