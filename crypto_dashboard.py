@@ -56,17 +56,17 @@ sol_price, sol_change = get_price("solana")
 # EST time
 now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
 
-# HTML table with hover tooltips (no pandas errors)
+# Clean HTML table with hover tooltips
 def render_table(data):
     html = """
     <style>
-    table { width: 100%; border-collapse: collapse; font-family: Arial; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; font-family: Arial; font-size: 14px; margin-top: 10px; }
     th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
     th { background-color: #f8f9fa; }
     tr:nth-child(even) { background-color: #f9f9f9; }
-    .green { background-color: #d4edda; color: #155724; }
-    .yellow { background-color: #fff3cd; color: #856404; }
-    .gray { background-color: #f8f9fa; color: #495057; }
+    .green { background-color: #D1FAE5 !important; color: #065F46 !important; }
+    .yellow { background-color: #FEF3C7 !important; color: #92400E !important; }
+    .gray { background-color: #F3F4F6 !important; color: #374151 !important; }
     </style>
     <table>
         <thead>
@@ -103,10 +103,11 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
+    with c1:
+        st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding:20px; background-color:#e3f2fd; border-radius:10px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#1976d2; margin:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.02–0.05%/day — Minimal selling pressure</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -129,10 +130,11 @@ with tab1:
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
+    with c1:
+        st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
     with c2:
-        st.markdown("<div style='text-align:center; padding:20px; background-color:#e3f2fd; border-radius:10px;'>", unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#1976d2; margin:0;'>Low</h2>", unsafe_allow_html=True)
+        st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
+        st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.03–0.06%/day — Minimal churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
@@ -155,7 +157,8 @@ with tab2:
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
+    with c1:
+        st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#ffebee; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#c62828; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
