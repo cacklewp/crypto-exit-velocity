@@ -3,7 +3,6 @@ import requests
 import pandas as pd
 from datetime import datetime
 import pytz
-# Removed 'import time' as it was not used
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
@@ -112,6 +111,10 @@ def get_historical_price_data(coin_id="bitcoin", days=90):
     except Exception as e:
         st.warning(f"Could not load historical data for {coin_id}. Error: {e}")
         return pd.DataFrame() 
+        
+    # FIX: Explicitly return an empty DataFrame if the API call was successful
+    # but the expected 'prices' key was missing.
+    return pd.DataFrame() # <--- THIS LINE WAS ADDED
 
 # Live data calls
 btc_price, btc_change = get_price("bitcoin")
@@ -196,13 +199,13 @@ with tab1:
     # Signal Table
     st.dataframe(btc_df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
     
-    # FIX: Clean separator
     st.divider()
     
     # NEW CHART SECTION 
     st.subheader("BTC Price History (90-Day)")
     
-    btc_hist_df = get_historical_price_data("bitcoin", days=90)
+    # This call is now guaranteed to return a DataFrame, not None.
+    btc_hist_df = get_historical_price_data("bitcoin", days=90) 
     
     if not btc_hist_df.empty:
         st.line_chart(btc_hist_df)
