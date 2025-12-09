@@ -201,22 +201,8 @@ with tab1:
     
     st.divider()
     
-    # NEW CHART SECTION 
-    st.subheader("BTC Price History (90-Day)")
-    
-    btc_hist_df = get_historical_price_data("bitcoin", days=90) 
-    
-    # 🚨 FIXED LINE: Added 'btc_hist_df is not None' check
-    if btc_hist_df is not None and not btc_hist_df.empty: 
-        st.line_chart(btc_hist_df)
-        
-        st.markdown("""
-        > **Note on Taker CVD:** This chart currently displays BTC Price. True Taker CVD requires specialized
-        > on-chain data APIs (like Glassnode or CryptoQuant). Once you integrate such an API, you can
-        > replace the `Price` data above with the historical `Taker CVD` metric.
-        """)
-    else:
-        st.error("Historical chart data is unavailable.")
+    # NOTE: The BTC Price Chart section (lines 197-210 in the previous version) 
+    # has been REMOVED as requested.
         
 
 # ETH Tab 
