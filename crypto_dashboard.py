@@ -38,7 +38,7 @@ fng_labels = {
     "solana": "Neutral"
 }
 
-# Real-time ETF flows (Farside Investors — Dec 5, 2025)
+# Real-time ETF flows (Farside — Dec 5, 2025)
 etf_flows = {
     "bitcoin": "+$87.3M",
     "ethereum": "−$41.6M",
@@ -66,8 +66,10 @@ btc_price, btc_change = get_price("bitcoin")
 eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
-# EST time
-now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
+# EST time + refresh countdown
+now_est = datetime.now(pytz.timezone('America/New_York'))
+time_str = now_est.strftime("%b %d, %Y %I:%M:%S %p")
+next_update_in = 60 - now_est.second
 
 # Table styling
 def style_signals(val):
@@ -86,14 +88,14 @@ tab1, tab2, tab3 = st.tabs(["Bitcoin", "Ethereum", "Solana"])
 with tab1:
     st.header("Bitcoin Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%")
+    with c1: st.metric("BTC Price", f"${btc_price:,.0f}", f"{btc_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.02–0.05%/day — Minimal selling pressure</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-    with c3: st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}")
+    with c3: st.metric("Fear & Greed (Global)", f"{fng_values['bitcoin']} — {fng_labels['bitcoin']}", help=tooltips["Fear & Greed"])
 
     btc_data = [
         ["Composite Exit Velocity", "Low", "0.02–0.05%/day", "Minimal selling pressure"],
@@ -112,14 +114,14 @@ with tab1:
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%")
+    with c1: st.metric("ETH Price", f"${eth_price:,.0f}", f"{eth_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#e8f5e9; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#2e7d32; margin:0;'>Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.03–0.06%/day — Minimal churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-    with c3: st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}")
+    with c3: st.metric("Fear & Greed (ETH-specific)", f"{fng_values['ethereum']} — {fng_labels['ethereum']}", help=tooltips["Fear & Greed"])
 
     eth_data = [
         ["Composite Exit Velocity", "Low", "0.03–0.06%/day", "Minimal churn; supply stable"],
@@ -138,14 +140,14 @@ with tab2:
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
     c1, c2, c3 = st.columns([1.7, 1.5, 1])
-    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%")
+    with c1: st.metric("SOL Price", f"${sol_price:,.2f}", f"{sol_change:+.1f}%", help="Live spot price from CoinGecko")
     with c2:
         st.markdown("<div style='text-align:center; padding:20px; background-color:#ffebee; border-radius:10px;'>", unsafe_allow_html=True)
         st.markdown("<h2 style='color:#c62828; margin:0;'>Medium-Low</h2>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:18px; color:#555; margin:10px 0 0 0;'>Composite Velocity</p>", unsafe_allow_html=True)
         st.markdown("<p style='font-size:14px; color:#666; margin:5px 0 0 0;'>0.04–0.07%/day — Balanced churn</p>", unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
-    with c3: st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}")
+    with c3: st.metric("Fear & Greed (SOL-specific)", f"{fng_values['solana']} — {fng_labels['solana']}", help=tooltips["Fear & Greed"])
 
     sol_data = [
         ["Composite Exit Velocity", "Medium-Low", "0.04–0.07%/day", "Balanced churn; stabilizing"],
@@ -164,7 +166,7 @@ with tab3:
 with st.expander("Glossary — Click for metric definitions"):
     st.markdown("""
     - **Composite Exit Velocity**: Daily % of supply that moves on-chain. Lower = stronger HODL bias.
-    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, BlackRock, Fidelity, etc.).
+    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, Fidelity, etc.).
     - **Exchange Netflow**: 14-day SMA of coins moving to/from exchanges. Negative = accumulation.
     - **Taker CVD**: Cumulative Volume Delta — aggressive buying vs. selling pressure.
     - **STH SOPR**: Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.
@@ -173,4 +175,5 @@ with st.expander("Glossary — Click for metric definitions"):
     - **Fear & Greed**: Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).
     """)
 
-st.caption(f"Last updated: {now_est} EST • Auto-refresh every 60s • ETF data from Farside Investors")
+# Footer
+st.caption(f"Last updated: {now_est} • Next update in {next_update_in}s • Data: CoinGecko, Alternative.me, Farside Investors")
