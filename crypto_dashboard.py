@@ -57,7 +57,7 @@ def get_price(coin):
         url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin}&vs_currencies=usd&include_24hr_change=true"
         data = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10).json()
         if coin in data:
-            return data[coin]["usd"], round(data[coin].get("usd_24h_change", 0), 2)
+            return data[coin]["usd"], round(data[coin].get("usd_24hr_change", 0), 2)
     except:
         pass
     return {"bitcoin": (89300, -3.3), "ethereum": (3030, -1.8), "solana": (140, -2.1)}[coin]
@@ -66,10 +66,11 @@ btc_price, btc_change = get_price("bitcoin")
 eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
-# EST time + refresh countdown
-now_est = datetime.now(pytz.timezone('America/New_York'))
-time_str = now_est.strftime("%b %d, %Y %I:%M:%S %p")
-next_update_in = 60 - now_est.second
+# EST time
+now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I:%M:%S %p")
+
+# Refresh countdown
+next_update_in = 60 - datetime.now().second
 
 # Table styling
 def style_signals(val):
@@ -175,5 +176,5 @@ with st.expander("Glossary — Click for metric definitions"):
     - **Fear & Greed**: Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).
     """)
 
-# Footer
-st.caption(f"Last updated: {now_est} • Next update in {next_update_in}s • Data: CoinGecko, Alternative.me, Farside Investors")
+# Refresh countdown
+st.caption(f"Last updated: {now_est} EST • Next update in {60 - datetime.now().second}s • Data: CoinGecko, Alternative.me, CFGI.io, Farside Investors")
