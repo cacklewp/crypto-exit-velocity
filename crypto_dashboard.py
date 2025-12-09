@@ -114,7 +114,7 @@ def get_historical_price_data(coin_id="bitcoin", days=90):
         
     # FIX: Explicitly return an empty DataFrame if the API call was successful
     # but the expected 'prices' key was missing.
-    return pd.DataFrame() # <--- THIS LINE WAS ADDED
+    return pd.DataFrame() 
 
 # Live data calls
 btc_price, btc_change = get_price("bitcoin")
@@ -204,10 +204,10 @@ with tab1:
     # NEW CHART SECTION 
     st.subheader("BTC Price History (90-Day)")
     
-    # This call is now guaranteed to return a DataFrame, not None.
     btc_hist_df = get_historical_price_data("bitcoin", days=90) 
     
-    if not btc_hist_df.empty:
+    # 🚨 FIXED LINE: Added 'btc_hist_df is not None' check
+    if btc_hist_df is not None and not btc_hist_df.empty: 
         st.line_chart(btc_hist_df)
         
         st.markdown("""
