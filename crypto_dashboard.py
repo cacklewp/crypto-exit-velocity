@@ -3,7 +3,7 @@ import requests
 import pandas as pd
 from datetime import datetime
 import pytz
-import time # Import time for timestamp conversion
+# Removed 'import time' as it was not used
 
 st.set_page_config(page_title="Exit Velocity Dashboard", layout="wide")
 
@@ -57,7 +57,17 @@ STATIC_SIGNALS = {
     }
 }
 
-# Tooltip definitions remain the same...
+# Tooltip definitions
+tooltips = {
+    "Composite Exit Velocity": "Daily % of supply that moves on-chain. Lower = stronger HODL bias.",
+    "ETF Flows": "Net daily inflows/outflows into spot BTC/ETH/SOL ETFs (BlackRock, Fidelity, etc.).",
+    "Exchange Netflow": "14-day SMA of coins moving to/from exchanges. Negative = accumulation.",
+    "Taker CVD": "Cumulative Volume Delta — measures aggressive buying vs. selling pressure.",
+    "STH SOPR": "Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.",
+    "Supply in Profit": "% of circulating supply with cost basis below current price.",
+    "Whale/Miner Velocity": "How actively large holders/miners are spending.",
+    "Fear & Greed": "Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).",
+}
 
 # --- 2. Live Data Fetching ---
 
@@ -82,7 +92,7 @@ def get_price(coin):
     # Fallback data if API fails
     return {"bitcoin": (89300, -3.3), "ethereum": (3030, -1.8), "solana": (140, -2.1)}[coin]
 
-# NEW FUNCTION: Historical Price Data (TTL 3600s/1hr)
+# Historical Price Data (TTL 3600s/1hr)
 @st.cache_data(ttl=3600)
 def get_historical_price_data(coin_id="bitcoin", days=90):
     """Fetches 90 days of historical price data from CoinGecko."""
@@ -90,28 +100,25 @@ def get_historical_price_data(coin_id="bitcoin", days=90):
         url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days={days}"
         data = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15).json()
         
-        # Check if 'prices' key exists and has data
         if 'prices' in data and data['prices']:
             df = pd.DataFrame(data['prices'], columns=['timestamp', 'Price'])
             
-            # Convert timestamp to datetime and set as index
             df['Date'] = pd.to_datetime(df['timestamp'], unit='ms').dt.date
             df = df.set_index('Date').drop(columns=['timestamp'])
             
-            # Keep only the last price for each day (daily granularity)
             df = df.groupby(df.index).last()
             
             return df
     except Exception as e:
         st.warning(f"Could not load historical data for {coin_id}. Error: {e}")
-        return pd.DataFrame() # Return empty dataframe on error
+        return pd.DataFrame() 
 
 # Live data calls
 btc_price, btc_change = get_price("bitcoin")
 eth_price, eth_change = get_price("ethereum")
 sol_price, sol_change = get_price("solana")
 
-# F&G values (using the current hardcoded structure, with BTC F&G being dynamic)
+# F&G values 
 fng_values = {
     "bitcoin": get_global_fng(),
     "ethereum": 43, 
@@ -128,7 +135,7 @@ now_est = datetime.now(pytz.timezone('America/New_York')).strftime("%b %d, %Y %I
 
 # --- 3. Utility Functions ---
 
-# Table styling (remains the same)...
+# Table styling
 def style_signals(val):
     if any(x in val for x in ["Low", "Positive", "Strong"]):
         return "background-color: #d4edda; color: #155724"
@@ -138,7 +145,7 @@ def style_signals(val):
         return "background-color: #f8f9fa; color: #495057"
     return ""
 
-# Function to generate the dataframe from the centralized data (remains the same)...
+# Function to generate the dataframe from the centralized data
 def create_coin_dataframe(coin_key):
     data_list = []
     data_source = STATIC_SIGNALS[coin_key]
@@ -148,7 +155,6 @@ def create_coin_dataframe(coin_key):
         current = values["current"]
         key_note = values["key_note"]
         
-        # Special handling for Fear & Greed to insert live F&G values
         if metric == "Fear & Greed":
             current = f"{fng_values[coin_key]} — {fng_labels[coin_key]}"
             
@@ -190,16 +196,15 @@ with tab1:
     # Signal Table
     st.dataframe(btc_df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
     
-    ---
+    # FIX: Clean separator
+    st.divider()
     
-    # 🌟 NEW CHART SECTION 🌟
+    # NEW CHART SECTION 
     st.subheader("BTC Price History (90-Day)")
     
-    # Fetch and display the historical price data
     btc_hist_df = get_historical_price_data("bitcoin", days=90)
     
     if not btc_hist_df.empty:
-        # We plot the Price column, with the Date index automatically used for the x-axis
         st.line_chart(btc_hist_df)
         
         st.markdown("""
@@ -211,7 +216,7 @@ with tab1:
         st.error("Historical chart data is unavailable.")
         
 
-# ETH Tab (Remains the same, using centralized data)
+# ETH Tab 
 with tab2:
     st.header("Ethereum Exit Velocity Dashboard")
 
@@ -238,7 +243,7 @@ with tab2:
 
     st.dataframe(eth_df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
-# SOL Tab (Remains the same, using centralized data)
+# SOL Tab 
 with tab3:
     st.header("Solana Exit Velocity Dashboard")
 
@@ -265,10 +270,18 @@ with tab3:
 
     st.dataframe(sol_df.style.map(style_signals, subset=["Signal"]), width='stretch', hide_index=True)
 
-# Glossary (remains the same)
+# Glossary
 with st.expander("Glossary — Click for metric definitions"):
-    # ... glossary content
-    pass
+    st.markdown("""
+    - **Composite Exit Velocity**: Daily % of supply that moves on-chain. Lower = stronger HODL bias.
+    - **ETF Flows**: Net daily inflows/outflows into spot ETFs (BlackRock, Fidelity, etc.).
+    - **Exchange Netflow**: 14-day SMA of coins moving to/from exchanges. Negative = accumulation.
+    - **Taker CVD**: Cumulative Volume Delta — aggressive buying vs. selling pressure.
+    - **STH SOPR**: Spent Output Profit Ratio for coins held <155 days. <1 = realized losses.
+    - **Supply in Profit**: % of circulating supply with cost basis below current price.
+    - **Whale/Miner Velocity**: How actively large holders/miners are spending.
+    - **Fear & Greed**: Market-wide sentiment index (0 = Extreme Fear, 100 = Extreme Greed).
+    """)
 
-# Refresh countdown (remains the same)
+# Refresh countdown 
 st.caption(f"Last updated: {now_est} EST • Data: CoinGecko, Alternative.me, CFGI.io, Farside Investors")
